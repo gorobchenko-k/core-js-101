@@ -20,8 +20,10 @@
  *    console.log(r.height);      // => 20
  *    console.log(r.getArea());   // => 200
  */
-function Rectangle(/* width, height */) {
-  throw new Error('Not implemented');
+function Rectangle(width, height) {
+  this.width = width;
+  this.height = height;
+  this.getArea = () => this.width * this.height;
 }
 
 
@@ -35,8 +37,8 @@ function Rectangle(/* width, height */) {
  *    [1,2,3]   =>  '[1,2,3]'
  *    { width: 10, height : 20 } => '{"height":10,"width":20}'
  */
-function getJSON(/* obj */) {
-  throw new Error('Not implemented');
+function getJSON(obj) {
+  return JSON.stringify(obj);
 }
 
 
@@ -51,8 +53,10 @@ function getJSON(/* obj */) {
  *    const r = fromJSON(Circle.prototype, '{"radius":10}');
  *
  */
-function fromJSON(/* proto, json */) {
-  throw new Error('Not implemented');
+function fromJSON(proto, json) {
+  const obj = JSON.parse(json);
+  Object.setPrototypeOf(obj, proto);
+  return obj;
 }
 
 
@@ -111,32 +115,78 @@ function fromJSON(/* proto, json */) {
  */
 
 const cssSelectorBuilder = {
-  element(/* value */) {
-    throw new Error('Not implemented');
+  selector: '',
+  isElement: false,
+  isId: false,
+  isClass: false,
+  isAttr: false,
+  isPseudoClass: false,
+  isPseudoElement: false,
+
+  element(value) {
+    if (this.isId || this.isClass || this.isAttr || this.isPseudoClass || this.isPseudoElement) throw new Error('Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element');
+    if (this.isElement) throw new Error('Element, id and pseudo-element should not occur more then one time inside the selector');
+    const newObj = { ...this };
+    newObj.isElement = true;
+    newObj.selector += value;
+    return newObj;
   },
 
-  id(/* value */) {
-    throw new Error('Not implemented');
+  id(value) {
+    if (this.isId) throw new Error('Element, id and pseudo-element should not occur more then one time inside the selector');
+    if (this.isClass || this.isAttr || this.isPseudoClass || this.isPseudoElement) throw new Error('Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element');
+    const newObj = { ...this };
+    newObj.isId = true;
+    newObj.selector += `#${value}`;
+    return newObj;
   },
 
-  class(/* value */) {
-    throw new Error('Not implemented');
+  class(value) {
+    if (this.isAttr || this.isPseudoClass || this.isPseudoElement) throw new Error('Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element');
+    const newObj = { ...this };
+    newObj.isClass = true;
+    newObj.selector += `.${value}`;
+    return newObj;
   },
 
-  attr(/* value */) {
-    throw new Error('Not implemented');
+  attr(value) {
+    if (this.isPseudoClass || this.isPseudoElement) throw new Error('Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element');
+    const newObj = { ...this };
+    newObj.isAttr = true;
+    newObj.selector += `[${value}]`;
+    return newObj;
   },
 
-  pseudoClass(/* value */) {
-    throw new Error('Not implemented');
+  pseudoClass(value) {
+    if (this.isPseudoElement) throw new Error('Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element');
+    const newObj = { ...this };
+    newObj.isPseudoClass = true;
+    newObj.selector += `:${value}`;
+    return newObj;
   },
 
-  pseudoElement(/* value */) {
-    throw new Error('Not implemented');
+  pseudoElement(value) {
+    if (this.isPseudoElement) throw new Error('Element, id and pseudo-element should not occur more then one time inside the selector');
+    const newObj = { ...this };
+    newObj.isPseudoElement = true;
+    newObj.selector += `::${value}`;
+    return newObj;
   },
 
-  combine(/* selector1, combinator, selector2 */) {
-    throw new Error('Not implemented');
+  combine(selector1, combinator, selector2) {
+    const newObj = { ...this };
+
+    newObj.selector = selector1.stringify();
+    newObj.selector += ` ${combinator} `;
+    newObj.selector += selector2.stringify();
+
+    return newObj;
+  },
+
+  stringify() {
+    const resultSelector = this.selector;
+    this.selector = '';
+    return resultSelector;
   },
 };
 

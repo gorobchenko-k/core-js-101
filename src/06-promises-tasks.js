@@ -28,8 +28,22 @@
  *      .catch((error) => console.log(error.message)) // 'Error: Wrong parameter is passed!
  *                                                    //  Ask her again.';
  */
-function willYouMarryMe(/* isPositiveAnswer */) {
-  throw new Error('Not implemented');
+function willYouMarryMe(isPositiveAnswer) {
+  if (typeof isPositiveAnswer !== 'boolean') {
+    return new Promise((resolve, reject) => {
+      reject(new Error('Wrong parameter is passed! Ask her again.'));
+    });
+  }
+
+  if (isPositiveAnswer) {
+    return new Promise((resolve) => {
+      resolve('Hooray!!! She said "Yes"!');
+    });
+  }
+
+  return new Promise((resolve) => {
+    resolve('Oh no, she said "No".');
+  });
 }
 
 
@@ -48,8 +62,8 @@ function willYouMarryMe(/* isPositiveAnswer */) {
  *    })
  *
  */
-function processAllPromises(/* array */) {
-  throw new Error('Not implemented');
+function processAllPromises(array) {
+  return Promise.all(array);
 }
 
 /**
@@ -58,7 +72,7 @@ function processAllPromises(/* array */) {
  * Function receive an array of Promise objects.
  *
  * @param {Promise[]} array
- * @return {Promise}
+ * @return {Prom ise}
  *
  * @example
  *    const promises = [
@@ -71,8 +85,8 @@ function processAllPromises(/* array */) {
  *    })
  *
  */
-function getFastestPromise(/* array */) {
-  throw new Error('Not implemented');
+function getFastestPromise(array) {
+  return Promise.race(array);
 }
 
 /**
@@ -92,8 +106,22 @@ function getFastestPromise(/* array */) {
  *    });
  *
  */
-function chainPromises(/* array, action */) {
-  throw new Error('Not implemented');
+function chainPromises(array, action) {
+  return new Promise((resolve, reject) => {
+    const result = [];
+
+    let numberOfComplited = 0;
+    array.forEach((promise, index) => {
+      promise.then((value) => {
+        result[index] = value;
+        numberOfComplited += 1;
+
+        if (numberOfComplited === array.length) {
+          resolve(result.reduce(action));
+        }
+      }).catch((error) => reject(error));
+    });
+  }).catch((error) => new Error(error));
 }
 
 module.exports = {
